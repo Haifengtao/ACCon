@@ -69,7 +69,7 @@ parser.add_argument('--temperature', type=float, default=0.05, help='regularizat
 
 
 # batchwise ranking regularizer
-parser.add_argument('--regularization_type', default='comp2', choices=['scl', 'ada', 'comp', "rr_acSCL", 'RNC', 'conR', 'comp2', 'rank'], help='regularization_type')
+parser.add_argument('--regularization_type', default='accon', choices=['scl', 'ada', 'accon', "rr_acSCL", 'RNC', 'conR','rank'], help='regularization_type')
 parser.add_argument('--regularization_weight', type=float, default=1, help='weight of the regularization term')
 parser.add_argument('--interpolation_lambda', type=float, default=2, help='interpolation strength')
 parser.add_argument('--K', type=int, default=128, help='queue size')
@@ -189,15 +189,6 @@ def main():
                          start_update=args.start_update, start_smooth=args.start_smooth,
                          kernel=args.fds_kernel, ks=args.fds_ks, sigma=args.fds_sigma, momentum=args.fds_mmt)
         model = torch.nn.DataParallel(model).cuda()
-
-    if args.model == "resnet18":
-        model = resnet50(fds=args.fds, bucket_num=args.bucket_num, bucket_start=args.bucket_start,
-                         start_update=args.start_update, start_smooth=args.start_smooth,
-                         kernel=args.fds_kernel, ks=args.fds_ks, sigma=args.fds_sigma, momentum=args.fds_mmt)
-        model = torch.nn.DataParallel(model).cuda()
-    # elif args.model == "contraNet_ada":
-    #     model = contraNet_ada(args, proj_dim=128)
-    #     model = torch.nn.DataParallel(model).cuda()
     elif args.model == "contraNet_ada_emb":
         model = contraNet_ada_emb(args, proj_dim=args.proj_dims)
         model = torch.nn.DataParallel(model).cuda()
@@ -206,38 +197,14 @@ def main():
         model = contraNet_ada(args, proj_dim=args.proj_dims)
         model = torch.nn.DataParallel(model).cuda()
 
-    # elif args.model == "contraNet_ada_queue":
-    #     model = MoCo(args, dim=args.dims, K=args.K, m=0.999, temperature=0.05)
-    #
-    #     model = torch.nn.DataParallel(model).cuda()
-        # model = model.cuda()
-
-        # 1) 初始化
-
-    # if args.model == "contraNet_ada_queue":
-    #     Con_Loss = nn.Identity(dist=None, norm_val=None, scale_s=20)
+ 
     if args.regularization_type == "ada":
         Con_Loss = SupConLoss_admargin(temperature=args.temperature, base_temperature=args.temperature)
     elif args.regularization_type == "scl":
         Con_Loss = SupConLoss(temperature=args.temperature, base_temperature=args.temperature)
-    # elif args.regularization_type == "comp":
-    #     Con_Loss = SupConLoss_comp(temperature=args.temperature, base_temperature=args.temperature)
-    elif args.regularization_type == "comp2":
-        Con_Loss = SupConLoss_comp_v2(temperature=args.temperature, base_temperature=args.temperature)
+    elif args.regularization_type == "accon":
+        Con_Loss = ACCon(temperature=args.temperature, base_temperature=args.temperature)
 
-    elif args.regularization_type == "rr_acSCL":
-        Con_Loss = SupConLoss_comp_BCE(temperature=args.temperature, base_temperature=args.temperature)
-
-    elif args.regularization_type == "acConR":
-        Con_Loss = acConR()
-
-    elif args.regularization_type == "RNC":
-        Con_Loss = RnCLoss(temperature=2, label_diff='l1', feature_sim='l2')
-
-    elif args.regularization_type == "rank":
-        Con_Loss = batchwise_ranking_regularizer
-    else:
-        raise "Pelease Check regularization_type"
 
     # evaluate only
     if args.evaluate:
