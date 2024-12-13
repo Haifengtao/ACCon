@@ -1,14 +1,3 @@
-# Copyright (c) 2021-present, Royal Bank of Canada.
-# All rights reserved.
-#
-# This source code is licensed under the license found in the
-# LICENSE file in the root directory of this source tree.
-########################################################################################
-# Code is based on the LDS and FDS (https://arxiv.org/pdf/2102.09554.pdf) implementation
-# from https://github.com/YyzHarry/imbalanced-regression/tree/main/imdb-wiki-dir
-# by Yuzhe Yang et al.
-########################################################################################
-import time
 import argparse
 import logging
 from tqdm import tqdm
@@ -18,6 +7,7 @@ from scipy.stats import gmean
 from collections import defaultdict
 import datetime
 import random
+import time
 import torch.backends.cudnn as cudnn
 from torch.utils.data import DataLoader
 
@@ -26,7 +16,6 @@ from loss import *
 from utils import *
 from datasets import IMDBWIKI, IMDBWIKI_ada  # , AgeDB_AdaSCL
 from resnet import resnet50, contraNet_ada, contraNet_ada_emb
-# from ranksim import batchwise_ranking_regularizer
 import os
 
 os.environ["KMP_WARNINGS"] = "FALSE"
@@ -67,7 +56,7 @@ parser.add_argument('--temperature', type=float, default=0.05, help='regularizat
 
 
 # batchwise ranking regularizer
-parser.add_argument('--regularization_type', default='comp2', choices=['scl', 'ada', 'comp', 'ACCon', 'ACConr', 'conr', 'rank'],
+parser.add_argument('--regularization_type', default='accon', choices=['scl', 'ada', 'accon', 'ACConr', 'conr', 'rank'],
                     help='regularization_type')
 parser.add_argument('--regularization_weight', type=float, default=1, help='weight of the regularization term')
 parser.add_argument('--interpolation_lambda', type=float, default=2, help='interpolation strength')
@@ -202,13 +191,13 @@ def main():
         model = contraNet_ada(args, proj_dim=args.proj_dims)
         model = torch.nn.DataParallel(model).cuda()
 
-
-        # 1) 初始化
-    if args.regularization_type == "ACCon":
-        Con_Loss = SupConLoss_comp_v2(temperature=args.temperature, base_temperature=args.temperature)
-
+    print(args.regularization_type)
+    if args.regularization_type == "accon":
+        Con_Loss = ACCon(temperature=args.temperature, base_temperature=args.temperature)
+    elif args.regularization_type == "ACConr":
+        Con_Loss = acConR(temperature=args.temperature, base_temperature=args.temperature)
     else:
-        raise "Pelease Check regularization_type"
+        raise "Pelease Check regularization_type!"
 
     # evaluate only
     if args.evaluate:

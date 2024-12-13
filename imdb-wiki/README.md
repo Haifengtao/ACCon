@@ -42,7 +42,7 @@ python train.py --batch_size 64 --lr 2.5e-4
 ##### batch size 64, learning rate 2.5e-4
 
 ```bash
-CUDA_VISIBLE_DEVICES=0,1 python train.py --model contraNet_ada_emb --datatype balanced --store_name weight_1 --regularization_type ACCon --workers 24 --epoch 100 --proj_dims 512  --temperature 0.05 --regularization_weight 1  --batch_size 64 --lr 0.00025
+CUDA_VISIBLE_DEVICES=0,1 python train.py --model contraNet_ada_emb --datatype balanced --store_name weight_1 --regularization_type accon --workers 24 --epoch 90 --proj_dims 512  --temperature 0.05 --regularization_weight 1  --batch_size 64 --lr 0.00025
 ```
 
 

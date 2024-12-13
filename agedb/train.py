@@ -1,13 +1,3 @@
-# Copyright (c) 2021-present, Royal Bank of Canada.
-# All rights reserved.
-#
-# This source code is licensed under the license found in the
-# LICENSE file in the root directory of this source tree.
-########################################################################################
-# Code is based on the LDS and FDS (https://arxiv.org/pdf/2102.09554.pdf) implementation
-# from https://github.com/YyzHarry/imbalanced-regression/tree/main/imdb-wiki-dir
-# by Yuzhe Yang et al.
-########################################################################################
 import time
 import argparse
 import logging
@@ -22,8 +12,6 @@ import torch.backends.cudnn as cudnn
 from torch.utils.data import DataLoader
 
 from loss import *
-
-# from balanaced_mse import *
 from utils import *
 from datasets import AgeDB, AgeDB_AdaSCL
 from resnet import resnet50, contraNet_ada, contraNet_ada_emb, MoCo
@@ -198,9 +186,7 @@ def main():
         model = torch.nn.DataParallel(model).cuda()
 
  
-    if args.regularization_type == "ada":
-        Con_Loss = SupConLoss_admargin(temperature=args.temperature, base_temperature=args.temperature)
-    elif args.regularization_type == "scl":
+    if  args.regularization_type == "scl":
         Con_Loss = SupConLoss(temperature=args.temperature, base_temperature=args.temperature)
     elif args.regularization_type == "accon":
         Con_Loss = ACCon(temperature=args.temperature, base_temperature=args.temperature)

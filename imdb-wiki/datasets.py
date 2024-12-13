@@ -122,7 +122,6 @@ class IMDBWIKI_ada(data.Dataset):
         if self.split == 'train':
             transform = transforms.Compose([
                 transforms.Resize((self.img_size, self.img_size)),
-                transforms.RandomCrop(self.img_size, padding=16),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize([.5, .5, .5], [.5, .5, .5]),

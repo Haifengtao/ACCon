@@ -1,3 +1,5 @@
-agedb/data
+agedb/data/AgeDB
 agedb/checkpoint
 agedb/__pycache__
+imdb-wiki/checkpoint
+imdb-wiki/__pycache__
