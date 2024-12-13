@@ -15,9 +15,7 @@ from allennlp.common import Params
 from allennlp.common.checks import ConfigurationError
 from allennlp.training.optimizers import Optimizer
 from util import device_mapping
-from loss2 import *
-from balanaced_mse import *
-from ranksim import batchwise_ranking_regularizer
+from loss import *
 
 
 def build_trainer(args, model, iterator):
@@ -125,18 +123,6 @@ class SamplingMultiTaskTrainer():
         sample_weights = [task_infos[task.name]['n_tr_batches'] for task in tasks]
         samples = random.choices(tasks, weights=sample_weights, k=validation_interval)
 
-        # if self._args.bmse:
-        #     if self._args.imp == 'gai':
-        #         criterion = GAILoss(self._args.args.init_noise_sigma, self._args.gmm)
-        #     elif self._args.imp == 'bmc':
-        #         criterion = BMCLoss(self._args.init_noise_sigma)
-        #     else:
-        #         raise NotImplementedError
-        #     # if not self._args.fix_noise_sigma:
-        #     #     optimizer.add_param_group({'params': criterion.noise_sigma, 'lr': self._args.sigma_lr, 'name': 'noise_sigma'})
-        # else:
-        #     criterion = globals()[f"weighted_{self._args.loss}_loss"]
-
         logging.info("Beginning training.")
         all_tr_metrics = {}
 
@@ -174,7 +160,7 @@ class SamplingMultiTaskTrainer():
                 except:
                     output_dict = self._forward(batch, task=task, epoch=real_epoch)
                     pass
-                # print(batch['weight'])
+
                 # import pdb
                 # pdb.set_trace()
 
@@ -185,14 +171,9 @@ class SamplingMultiTaskTrainer():
                 assert torch.isfinite(loss).all(), logging.info(f'Bad Loss: {loss}')
 
                 if self._args.regularization_weight > 0:
-                    if self._args.regularization_type == 'rank':
-                        reg_loss = self._args.regularization_weight * batchwise_ranking_regularizer(output_dict['embs'],
-                                                                                                 output_dict['labels'],
-                                                                                                 self._args.interpolation_lambda)
-                        loss += reg_loss
 
-                    elif self._args.regularization_type in ['comp2', 'comp3'] and batch['input1']['words'].size()[0] != 1:
-                        Reg_Loss = SupConLoss_comp_v3()
+                    if self._args.regularization_type in ['accon'] and batch['input1']['words'].size()[0] != 1:
+                        Reg_Loss = ACCon()
                         reg_loss = self._args.regularization_weight * Reg_Loss(output_dict['embs'],
                                                                                output_dict['labels'])
                         loss += reg_loss
@@ -216,15 +197,13 @@ class SamplingMultiTaskTrainer():
                                                                                output_dict['labels'],
                                                                                output_dict['logits']
                                                                                )
-                        # print(reg_loss)
-                        # loss += reg_loss
                         loss += reg_loss
                         loss += reg_loss
                     else:
                         # import pdb
                         # pdb.set_trace()
                         continue
-                        raise "Error!!!"
+                        # raise "Error!!!"
                     reg_loss_log += reg_loss.data.cpu().numpy()
 
                 loss.backward()

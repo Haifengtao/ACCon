@@ -11,7 +11,7 @@ from allennlp.modules.token_embedders import Embedding
 from allennlp.modules.seq2seq_encoders import Seq2SeqEncoder as s2s_e
 
 from fds import FDS
-from loss2 import *
+from loss import *
 
 def build_model(args, vocab, pretrained_embs, tasks):
     '''
@@ -285,7 +285,7 @@ class MultiTaskModel(nn.Module):
                 out['embs'] = proj_emb
                 out['labels'] = label
 
-            elif self.args.regularization_type == 'comp2':
+            elif self.args.regularization_type == 'accon':
                 proj_emb = proj_layer(pair_emb_s)
                 proj_emb = F.normalize(proj_emb, dim=1)
                 logits = pred_layer(proj_emb)

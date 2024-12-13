@@ -44,14 +44,14 @@ pip install overrides==3.1.0
 #### Train a vanilla model
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python train_mine.py --datatype natural --store_name vanilla --temperature 0.05 --patience 30 --regularization_weight 10  --batch_size 128 --lr 1e-4 --loss mse
+CUDA_VISIBLE_DEVICES=0 python train.py --datatype natural --store_name vanilla --temperature 0.05 --patience 30 --regularization_weight 10  --batch_size 128 --lr 1e-4 --loss mse
 ```
 
 
 #### Train a model using ACCON
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python train_mine.py --datatype natural --store_name ACCon --regularization_type comp2 --proj_dims 2000 --temperature 0.05 --patience 30 --regularization_weight 10  --batch_size 128 --lr 1e-4 --loss mse
+CUDA_VISIBLE_DEVICES=1 python train.py --datatype natural --store_name ACCon --regularization_type accon --proj_dims 2000 --temperature 0.05 --patience 30 --regularization_weight 10  --batch_size 128 --lr 1e-4 --loss mse
 ```
 
 #### Evaluate a trained checkpoint

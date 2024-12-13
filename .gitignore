@@ -3,3 +3,7 @@ agedb/checkpoint
 agedb/__pycache__
 imdb-wiki/checkpoint
 imdb-wiki/__pycache__
+sts-b/checkpoint
+sts-b/__pycache__
+sts-b/glove/glove.840B.300d.txt
+sts-b/allennl/__pycache__

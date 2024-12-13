@@ -16,7 +16,7 @@ rootPath = os.path.split(curPath)[0]
 sys.path.append(rootPath)
 from allennlp.data.iterators import BasicIterator
 import allennlp
-from preprocess import build_tasks
+from preprocess import build_tasks, build_tasks_n
 from models import build_model, build_model_scl, build_model_ada, build_model_naivescl
 from trainer import build_trainer
 from evaluate import evaluate
@@ -91,23 +91,12 @@ def main(arguments):
     parser.add_argument('--fds_mmt', type=float, default=0.9, help='FDS momentum')
 
     # batchwise ranking regularizer
-    parser.add_argument('--regularization_type', default=None, choices=['comp3', 'scl', 'ada', 'comp2', 'conr','rank'],
+    parser.add_argument('--regularization_type', default=None, choices=['comp3', 'scl', 'ada', 'accon', 'conr','rank'],
                         help='regularization_type')
     parser.add_argument('--regularization_weight', type=float, default=0, help='weight of the regularization term')
     parser.add_argument('--interpolation_lambda', type=float, default=2.0, help='interpolation strength')
     parser.add_argument('--proj_dims', type=int, default=4000, help='projection dimentions')
     parser.add_argument('--temperature', type=float, default=0.05, help='temperature')
-    # parser.add_argument('--K', type=int, default=128, help='queue size')
-    # parser.add_argument('--dims', type=int, default=128, help='queue size')
-
-    # # BMSE
-    # parser.add_argument('--bmse', action='store_true', default=True, help='use Balanced MSE')
-    # parser.add_argument('--imp', type=str, default='bmc', choices=['gai', 'bmc', 'bni'], help='implementation options')
-    # parser.add_argument('--gmm', type=str, default='gmm.pkl', help='path to preprocessed GMM')
-    # parser.add_argument('--init_noise_sigma', type=float, default=1., help='initial scale of the noise')
-    # parser.add_argument('--sigma_lr', type=float, default=1e-2, help='learning rate of the noise scale')
-    # parser.add_argument('--balanced_metric', action='store_true', default=False, help='use balanced metric')
-    # parser.add_argument('--fix_noise_sigma', action='store_true', default=False, help='disable joint optimization')
 
 
     # re-weighting: SQRT_INV / INV
@@ -193,7 +182,7 @@ def main(arguments):
     logging.info("Loading tasks...")
     start_time = time.time()
     if args.datatype == "natural":
-        tasks, vocab, word_embs = build_tasks(args)
+        tasks, vocab, word_embs = build_tasks_n(args)
     else:
         tasks, vocab, word_embs = build_tasks(args)
     logging.info('\tFinished loading tasks in %.3fs', time.time() - start_time)
@@ -201,7 +190,7 @@ def main(arguments):
     # Build model
     logging.info('Building model...')
     start_time = time.time()
-    if args.regularization_type in ["comp2"]:
+    if args.regularization_type in ["accon"]:
         model = build_model_scl(args, vocab, word_embs, tasks)
     elif args.regularization_type in ["ada"]:
         model = build_model_ada(args, vocab, word_embs, tasks)
